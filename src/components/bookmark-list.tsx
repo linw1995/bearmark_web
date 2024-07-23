@@ -70,6 +70,11 @@ export function BookmarkList() {
     size,
     setSize,
   } = useBookmarks({});
+  const isEmpty = paginatedBookmarks?.[0]?.length === 0;
+  const isReachingEnd =
+    isEmpty ||
+    (paginatedBookmarks &&
+      paginatedBookmarks[paginatedBookmarks.length - 1]?.length === 0);
   return (
     <ScrollArea>
       <div className="space-y-4 overflow-y-auto max-h-[80vh]">
@@ -96,7 +101,9 @@ export function BookmarkList() {
           </>
         ) : (
           <div className="flex justify-center mt-4">
-            <Button onClick={() => setSize(size + 1)}>Load More</Button>
+            <Button onClick={() => setSize(size + 1)} disabled={isReachingEnd}>
+              {!isReachingEnd ? "Load More" : "No More"}
+            </Button>
           </div>
         )}
       </div>
