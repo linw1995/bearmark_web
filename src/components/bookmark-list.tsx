@@ -7,6 +7,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, AlertCircle } from "lucide-react";
+import { BookmarkEditor } from "@/components/bookmark-editor";
+import type { SWRInfiniteResponse } from "swr/infinite";
 
 function SkeletonBookmark() {
   return (
@@ -33,7 +35,13 @@ function SkeletonBookmark() {
   );
 }
 
-function Bookmark({ data }: { data: Bookmark }) {
+function Bookmark({
+  data,
+  mutate,
+}: {
+  data: Bookmark;
+  mutate: SWRInfiniteResponse<Bookmark[]>["mutate"];
+}) {
   return (
     <Card>
       <CardHeader className="flex flex-row justify-between items-center gap-4">
@@ -42,7 +50,9 @@ function Bookmark({ data }: { data: Bookmark }) {
           <Button size="icon">
             <ExternalLink />
           </Button>
-          <Button variant="outline">Edit</Button>
+          <BookmarkEditor data={data} mutate={mutate}>
+            <Button variant="outline">Edit</Button>
+          </BookmarkEditor>
           <Button variant="outline">Delete</Button>
         </div>
       </CardHeader>
@@ -69,44 +79,51 @@ export function BookmarkList() {
     isLoading,
     size,
     setSize,
+    mutate,
   } = useBookmarks({});
   const isEmpty = paginatedBookmarks?.[0]?.length === 0;
   const isReachingEnd =
     isEmpty ||
     (paginatedBookmarks &&
       paginatedBookmarks[paginatedBookmarks.length - 1]?.length === 0);
+
   return (
-    <ScrollArea>
-      <div className="space-y-4 overflow-y-auto max-h-[80vh]">
-        {paginatedBookmarks &&
-          paginatedBookmarks.map((bookmarks) =>
-            bookmarks.map((bookmark) => (
-              <Bookmark key={bookmark.id} data={bookmark} />
-            ))
+    <>
+      <ScrollArea>
+        <div className="space-y-4 overflow-y-auto max-h-[80vh]">
+          {paginatedBookmarks &&
+            paginatedBookmarks.map((bookmarks) =>
+              bookmarks.map((bookmark) => (
+                <Bookmark key={bookmark.id} data={bookmark} mutate={mutate} />
+              ))
+            )}
+          {isError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>
+                Run into an error while fetching bookmarks.
+              </AlertDescription>
+            </Alert>
           )}
-        {isError && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>
-              Run into an error while fetching bookmarks.
-            </AlertDescription>
-          </Alert>
-        )}
-        {isLoading ? (
-          <>
-            <SkeletonBookmark />
-            <SkeletonBookmark />
-            <SkeletonBookmark />
-          </>
-        ) : (
-          <div className="flex justify-center mt-4">
-            <Button onClick={() => setSize(size + 1)} disabled={isReachingEnd}>
-              {!isReachingEnd ? "Load More" : "No More"}
-            </Button>
-          </div>
-        )}
-      </div>
-    </ScrollArea>
+          {isLoading ? (
+            <>
+              <SkeletonBookmark />
+              <SkeletonBookmark />
+              <SkeletonBookmark />
+            </>
+          ) : (
+            <div className="flex justify-center mt-4">
+              <Button
+                onClick={() => setSize(size + 1)}
+                disabled={isReachingEnd}
+              >
+                {!isReachingEnd ? "Load More" : "No More"}
+              </Button>
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+    </>
   );
 }

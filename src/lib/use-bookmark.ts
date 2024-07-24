@@ -45,3 +45,16 @@ export function useBookmarks(props: UseBookmarksProps) {
     }
   );
 }
+
+export function updateBookmark(
+  id: number,
+  modify: Partial<Omit<Bookmark, "id">>
+) {
+  return fetch(`/api/bookmarks/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(modify),
+  });
+}
