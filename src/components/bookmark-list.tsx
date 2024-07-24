@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, AlertCircle } from "lucide-react";
 import { BookmarkEditor } from "@/components/bookmark-editor";
 import type { SWRInfiniteResponse } from "swr/infinite";
+import { BookmarkDeleteAlertDialog } from "./bookmark-delete-alter-dialog";
 
 function SkeletonBookmark() {
   return (
@@ -53,7 +54,9 @@ function Bookmark({
           <BookmarkEditor data={data} mutate={mutate}>
             <Button variant="outline">Edit</Button>
           </BookmarkEditor>
-          <Button variant="outline">Delete</Button>
+          <BookmarkDeleteAlertDialog id={data.id} mutate={mutate}>
+            <Button variant="outline">Delete</Button>
+          </BookmarkDeleteAlertDialog>
         </div>
       </CardHeader>
 

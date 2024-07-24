@@ -58,3 +58,9 @@ export function updateBookmark(
     body: JSON.stringify(modify),
   });
 }
+
+export function deleteBookmark(id: number) {
+  return fetch(`/api/bookmarks/${id}`, {
+    method: "DELETE",
+  });
+}
