@@ -48,8 +48,10 @@ function Bookmark({
       <CardHeader className="flex flex-row justify-between items-center gap-4">
         <CardTitle>{data.title}</CardTitle>
         <div className="flex gap-2">
-          <Button size="icon">
-            <ExternalLink />
+          <Button size="icon" asChild>
+            <a href={data.url} target="_blank" rel="noopener noreferrer">
+              <ExternalLink />
+            </a>
           </Button>
           <BookmarkEditor data={data} mutate={mutate}>
             <Button variant="outline">Edit</Button>
