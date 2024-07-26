@@ -51,7 +51,7 @@ export function updateBookmark(
   modify: Partial<Omit<Bookmark, "id">>
 ) {
   return fetch(`/api/bookmarks/${id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
