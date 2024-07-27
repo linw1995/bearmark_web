@@ -1,4 +1,5 @@
 import { updateBookmark, type Bookmark } from "@/lib/use-bookmark";
+import { TagsInput } from "@/components/tags-list";
 
 import {
   Dialog,
@@ -29,7 +30,7 @@ import type { SWRInfiniteResponse } from "swr/infinite";
 const formSchema = z.object({
   title: z.string(),
   url: z.string().url(),
-  tags: z.string(),
+  tags: z.string().array(),
 });
 
 export function BookmarkEditor({
@@ -48,7 +49,7 @@ export function BookmarkEditor({
     defaultValues: {
       title: data.title,
       url: data.url,
-      tags: data.tags.join(","),
+      tags: data.tags,
     },
   });
 
@@ -60,8 +61,8 @@ export function BookmarkEditor({
     if (data.url !== values.url) {
       changeset.url = values.url;
     }
-    if (data.tags.join(",") !== values.tags) {
-      changeset.tags = values.tags.split(",").map((tag) => tag.trim());
+    if (data.tags != values.tags) {
+      changeset.tags = values.tags.map((tag) => tag.trim());
     }
     await updateBookmark(data.id, changeset);
     await mutate();
@@ -117,7 +118,7 @@ export function BookmarkEditor({
                 <FormItem>
                   <FormLabel>Tags</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <TagsInput {...field} />
                   </FormControl>
                   <FormDescription />
                   <FormMessage />

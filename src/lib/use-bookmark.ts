@@ -1,6 +1,5 @@
 import useSWRInfinite from "swr/infinite";
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import { fetcher } from "./utils";
 
 export interface UseBookmarksProps {
   q?: string;
@@ -17,7 +16,6 @@ export interface Bookmark {
 export function useBookmarks(props: UseBookmarksProps) {
   return useSWRInfinite<Bookmark[]>(
     (pageIndex, previousPageData) => {
-      // 已经到最后一页
       if (pageIndex > 0 && !previousPageData) return null;
 
       const qs = new URLSearchParams();
@@ -35,7 +33,6 @@ export function useBookmarks(props: UseBookmarksProps) {
       if (qs.size > 0) {
         query = `?${qs.toString()}`;
       }
-      // 将游标添加到 API
       const key = `/api/bookmarks${query}`;
       return key;
     },
