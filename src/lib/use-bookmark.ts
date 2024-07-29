@@ -14,16 +14,24 @@ export interface Bookmark {
 }
 
 export function useBookmarks(props: UseBookmarksProps) {
+  const limit = props.limit || 10;
+
   return useSWRInfinite<Bookmark[]>(
     (pageIndex, previousPageData) => {
-      if (pageIndex > 0 && !previousPageData) return null;
+      previousPageData = previousPageData || [];
+
+      if (
+        pageIndex > 0 &&
+        (!previousPageData || previousPageData.length < limit)
+      )
+        return null;
 
       const qs = new URLSearchParams();
-      Object.entries(props).forEach(([key, value]) => {
-        if (value) {
-          qs.append(key, value.toString());
-        }
-      });
+      qs.set("limit", limit.toString());
+      if (props.q) {
+        qs.set("q", props.q);
+      }
+
       if (pageIndex !== 0) {
         const cursor = previousPageData[previousPageData.length - 1];
         qs.set("before", cursor.id.toString());
