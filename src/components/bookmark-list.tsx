@@ -77,7 +77,7 @@ function Bookmark({
   );
 }
 
-export function BookmarkList() {
+export function BookmarkList({ query }: { query?: string }) {
   const {
     data: paginatedBookmarks,
     error: isError,
@@ -85,7 +85,7 @@ export function BookmarkList() {
     size,
     setSize,
     mutate,
-  } = useBookmarks({});
+  } = useBookmarks({ q: query });
   const isEmpty = paginatedBookmarks?.[0]?.length === 0;
   const isReachingEnd =
     isEmpty ||
