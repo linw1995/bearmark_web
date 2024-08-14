@@ -30,6 +30,7 @@ interface Props {
   name: string;
 }
 
+// @ts-expect-error TS6133
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TagsInput = forwardRef(function TagsInput(props: Props, ref) {
   const inputRef = useRef(null);

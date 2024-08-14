@@ -86,7 +86,7 @@ export function FolderList({
     setInput("");
   };
   return (
-    <div className="w-full max-w-xs">
+    <div className="w-full p-1">
       <div className="mb-4">
         <div className="flex items-center gap-2">
           <Input
@@ -119,7 +119,7 @@ export function FolderList({
           </Button>
         </div>
       </div>
-      <div className="border rounded-lg overflow-hidden">
+      <div className="rounded overflow-hidden">
         {filtered.map((folder, index) => (
           <TooltipProvider>
             <Tooltip>

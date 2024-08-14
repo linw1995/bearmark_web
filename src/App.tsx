@@ -2,6 +2,11 @@ import "./App.css";
 import { Input } from "@/components/ui/input";
 import { BookmarkList } from "@/components/bookmark-list";
 import { FolderList } from "@/components/folder-list";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 import { useState } from "react";
 import { Search } from "lucide-react";
@@ -14,8 +19,11 @@ function App() {
   return (
     <>
       <CWDContext.Provider value={cwd}>
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-row justify-between">
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="w-full y-full px-4 py-8"
+        >
+          <ResizablePanel defaultSize={20}>
             <FolderList
               key={cwd}
               cwd={cwd}
@@ -25,24 +33,29 @@ function App() {
               }}
               select={select}
             />
-            <div>
-              <div className="flex justify-between items-center mb-6 gap-2">
-                <h1 className="text-2xl font-bold">Bookmarks</h1>
-                <div className="flex items-center rounded-md bg-card gap-2">
-                  <Input
-                    type="search"
-                    placeholder="Search..."
-                    className="bg-transparent flex-1 focus:outline-none"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                  />
-                  <Search className="text-card-foreground hover:bg-muted/50 transition-colors" />
-                </div>
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel className="w-full h-full pl-4 flex flex-col">
+            <div className="flex justify-between items-center mb-6 gap-2">
+              <h1 className="text-2xl font-bold">Bookmarks</h1>
+              <div className="flex items-center rounded-md bg-card gap-2">
+                <Input
+                  type="search"
+                  placeholder="Search..."
+                  className="bg-transparent flex-1 focus:outline-none"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+                <Search className="text-card-foreground hover:bg-muted/50 transition-colors" />
               </div>
-              <BookmarkList query={query} cwd={selected} />
             </div>
-          </div>
-        </div>
+            <BookmarkList
+              className="pr-4 flex-grow"
+              query={query}
+              cwd={selected}
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </CWDContext.Provider>
     </>
   );

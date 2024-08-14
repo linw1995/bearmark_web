@@ -10,6 +10,7 @@ import { ExternalLink, AlertCircle } from "lucide-react";
 import { BookmarkEditor } from "@/components/bookmark-editor";
 import type { SWRInfiniteResponse } from "swr/infinite";
 import { BookmarkDeleteAlertDialog } from "./bookmark-delete-alter-dialog";
+import { cn } from "@/lib/utils";
 
 function SkeletonBookmark() {
   return (
@@ -77,7 +78,15 @@ function Bookmark({
   );
 }
 
-export function BookmarkList({ query, cwd }: { query?: string; cwd?: string }) {
+export function BookmarkList({
+  query,
+  cwd,
+  className,
+}: {
+  query?: string;
+  cwd?: string;
+  className: string;
+}) {
   const limit = 10;
   const {
     data: paginatedBookmarks,
@@ -96,7 +105,7 @@ export function BookmarkList({ query, cwd }: { query?: string; cwd?: string }) {
   return (
     <>
       <ScrollArea>
-        <div className="space-y-4 overflow-y-auto max-h-[80vh]">
+        <div className={cn("space-y-4 overflow-y-auto", className)}>
           {paginatedBookmarks &&
             paginatedBookmarks.map((bookmarks) =>
               bookmarks.map((bookmark) => (
