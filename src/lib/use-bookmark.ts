@@ -4,6 +4,7 @@ import { fetcher } from "./utils";
 export interface UseBookmarksProps {
   q?: string;
   limit?: number;
+  cwd?: string;
 }
 
 export interface Bookmark {
@@ -31,7 +32,9 @@ export function useBookmarks(props: UseBookmarksProps) {
       if (props.q) {
         qs.set("q", props.q);
       }
-
+      if (props.cwd) {
+        qs.set("cwd", props.cwd);
+      }
       if (pageIndex !== 0) {
         const cursor = previousPageData[previousPageData.length - 1];
         qs.set("before", cursor.id.toString());

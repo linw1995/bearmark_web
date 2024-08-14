@@ -77,7 +77,7 @@ function Bookmark({
   );
 }
 
-export function BookmarkList({ query }: { query?: string }) {
+export function BookmarkList({ query, cwd }: { query?: string; cwd?: string }) {
   const limit = 10;
   const {
     data: paginatedBookmarks,
@@ -86,7 +86,7 @@ export function BookmarkList({ query }: { query?: string }) {
     size,
     setSize,
     mutate,
-  } = useBookmarks({ q: query, limit });
+  } = useBookmarks({ q: query, limit, cwd });
   const isEmpty = paginatedBookmarks?.[0]?.length === 0;
   const isReachingEnd =
     isEmpty ||
