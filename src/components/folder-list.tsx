@@ -40,7 +40,7 @@ function className(
   folder: Folder | undefined,
   selectedFolder: Folder | null | undefined
 ): string {
-  return `flex items-center px-4 py-3 cursor-pointer transition-colors select-none ${
+  return `flex items-center px-4 py-3 cursor-pointer transition-colors ${
     isSelected(folder, selectedFolder)
       ? "bg-primary text-primary-foreground"
       : "hover:bg-muted"
@@ -86,7 +86,7 @@ export function FolderList({
     setInput("");
   };
   return (
-    <div className="w-full p-1">
+    <div className="w-full p-1 select-none">
       <div className="mb-4">
         <div className="flex items-center gap-2">
           <Input

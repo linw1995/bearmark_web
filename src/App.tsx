@@ -36,7 +36,7 @@ function App() {
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel className="w-full h-full pl-4 flex flex-col">
-            <div className="flex justify-between items-center mb-6 gap-2">
+            <div className="flex justify-between items-center mb-6 gap-2 pt-2">
               <h1 className="text-2xl font-bold">Bookmarks</h1>
               <div className="flex items-center rounded-md bg-card gap-2">
                 <Input
