@@ -119,7 +119,7 @@ export function FolderList({
           </Button>
         </div>
       </div>
-      <div className="rounded overflow-hidden">
+      <div className="overflow-hidden">
         {filtered.map((folder, index) => (
           <TooltipProvider>
             <Tooltip>
