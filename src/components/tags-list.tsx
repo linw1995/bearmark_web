@@ -7,18 +7,19 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-
-import type { Noop } from "react-hook-form";
-import { X, Plus } from "lucide-react";
-import { forwardRef, useRef, useState } from "react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-
 import { useTags } from "@/lib/use-tag";
+import { jsonFetcherMaker } from "@/lib/utils";
+import { RequiredAuthContext } from "@/context";
+
+import type { Noop } from "react-hook-form";
+import { X, Plus } from "lucide-react";
+import { forwardRef, useRef, useState, useContext } from "react";
 import { CommandGroup } from "cmdk";
 
 interface Props {
@@ -35,10 +36,14 @@ interface Props {
 const TagsInput = forwardRef(function TagsInput(props: Props, ref) {
   const inputRef = useRef(null);
 
+  const { require } = useContext(RequiredAuthContext);
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
-  const { data: paginatedTags, isLoading } = useTags({ q: inputValue });
+  const { data: paginatedTags, isLoading } = useTags(
+    { q: inputValue },
+    jsonFetcherMaker(require)
+  );
   const isEmpty = paginatedTags?.[0]?.length === 0;
   const tags = paginatedTags?.flat().map((tag) => tag.name) || [];
   const fullMatch = !inputValue || tags.find((tag) => tag === inputValue);

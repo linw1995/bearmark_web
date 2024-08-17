@@ -7,6 +7,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Folder, useFolders, createFolder } from "@/lib/use-folder";
+import { RequiredAuthContext } from "@/context";
+import { fetcherMaker, jsonFetcherMaker } from "@/lib/utils";
 
 import {
   FolderIcon,
@@ -16,7 +18,7 @@ import {
   ArrowLeftIcon,
   PlusIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useContext } from "react";
 
 function parentPath(path: string): string {
   return path.split("/").slice(0, -1).join("/");
@@ -56,7 +58,8 @@ export function FolderList({
   select: (path: string) => void;
   cd: (path: string) => void;
 }) {
-  const { data, mutate } = useFolders({ cwd });
+  const { require } = useContext(RequiredAuthContext);
+  const { data, mutate } = useFolders({ cwd }, jsonFetcherMaker(require));
   const [selected, setSelected] = useState<Folder | null | undefined>(null);
   const [input, setInput] = useState<string>("");
   const filtered = (data || []).filter((value) =>
@@ -85,7 +88,7 @@ export function FolderList({
     if (input.length === 0) {
       return;
     }
-    await createFolder(cwd + "/" + input);
+    await createFolder(cwd + "/" + input, fetcherMaker(require));
     await mutate();
     setInput("");
   };

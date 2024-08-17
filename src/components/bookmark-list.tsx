@@ -6,11 +6,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, AlertCircle } from "lucide-react";
 import { BookmarkEditor } from "@/components/bookmark-editor";
-import type { SWRInfiniteResponse } from "swr/infinite";
 import { BookmarkDeleteAlertDialog } from "./bookmark-delete-alter-dialog";
-import { cn } from "@/lib/utils";
+import { cn, jsonFetcherMaker } from "@/lib/utils";
+import { RequiredAuthContext } from "@/context";
+
+import { ExternalLink, AlertCircle } from "lucide-react";
+import type { SWRInfiniteResponse } from "swr/infinite";
+import { useContext } from "react";
 
 function SkeletonBookmark() {
   return (
@@ -87,6 +90,7 @@ export function BookmarkList({
   cwd?: string;
   className: string;
 }) {
+  const { require } = useContext(RequiredAuthContext);
   const limit = 10;
   const {
     data: paginatedBookmarks,
@@ -95,7 +99,7 @@ export function BookmarkList({
     size,
     setSize,
     mutate,
-  } = useBookmarks({ q: query, limit, cwd });
+  } = useBookmarks({ q: query, limit, cwd }, jsonFetcherMaker(require));
   const isEmpty = paginatedBookmarks?.[0]?.length === 0;
   const isReachingEnd =
     isEmpty ||

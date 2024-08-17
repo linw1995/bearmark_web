@@ -1,6 +1,5 @@
 import { updateBookmark, type Bookmark } from "@/lib/use-bookmark";
 import { TagsInput } from "@/components/tags-list";
-
 import {
   Dialog,
   DialogTitle,
@@ -13,7 +12,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
@@ -23,9 +21,13 @@ import {
   FormDescription,
   FormMessage,
 } from "@/components/ui/form";
+import { fetcherMaker } from "@/lib/utils";
+import { RequiredAuthContext } from "@/context";
+
 import { z } from "zod";
-import { useState } from "react";
+import { useForm } from "react-hook-form";
 import type { SWRInfiniteResponse } from "swr/infinite";
+import { useContext, useState } from "react";
 
 const formSchema = z.object({
   title: z.string(),
@@ -53,6 +55,7 @@ export function BookmarkEditor({
     },
   });
 
+  const { require } = useContext(RequiredAuthContext);
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const changeset: Partial<Bookmark> = {};
     if (data.title !== values.title) {
@@ -64,7 +67,7 @@ export function BookmarkEditor({
     if (data.tags != values.tags) {
       changeset.tags = values.tags.map((tag) => tag.trim());
     }
-    await updateBookmark(data.id, changeset);
+    await updateBookmark(data.id, changeset, fetcherMaker(require));
     await mutate();
     setOpen(false);
   }

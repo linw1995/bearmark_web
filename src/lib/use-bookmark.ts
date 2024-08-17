@@ -1,5 +1,5 @@
+import { BareFetcher } from "swr";
 import useSWRInfinite from "swr/infinite";
-import { fetcher } from "./utils";
 
 export interface UseBookmarksProps {
   q?: string;
@@ -14,10 +14,13 @@ export interface Bookmark {
   tags: Array<string>;
 }
 
-export function useBookmarks(props: UseBookmarksProps) {
+export function useBookmarks(
+  props: UseBookmarksProps,
+  fetcher: BareFetcher<Bookmark[]>
+) {
   const limit = props.limit || 10;
 
-  return useSWRInfinite<Bookmark[]>(
+  return useSWRInfinite(
     (pageIndex, previousPageData) => {
       previousPageData = previousPageData || [];
 
@@ -56,7 +59,8 @@ export function useBookmarks(props: UseBookmarksProps) {
 
 export function updateBookmark(
   id: number,
-  modify: Partial<Omit<Bookmark, "id">>
+  modify: Partial<Omit<Bookmark, "id">>,
+  fetch: typeof global.fetch
 ) {
   return fetch(`/api/bookmarks/${id}`, {
     method: "PATCH",
@@ -67,7 +71,7 @@ export function updateBookmark(
   });
 }
 
-export function deleteBookmark(id: number) {
+export function deleteBookmark(id: number, fetch: typeof global.fetch) {
   return fetch(`/api/bookmarks/${id}`, {
     method: "DELETE",
   });

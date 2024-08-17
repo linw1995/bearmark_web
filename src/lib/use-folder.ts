@@ -1,5 +1,4 @@
-import useSWR from "swr";
-import { fetcher } from "./utils";
+import useSWR, { BareFetcher } from "swr";
 
 export interface UseFolderProps {
   cwd?: string;
@@ -10,7 +9,10 @@ export interface Folder {
   path: string;
 }
 
-export function useFolders(props: UseFolderProps) {
+export function useFolders(
+  props: UseFolderProps,
+  fetcher: BareFetcher<Folder[]>
+) {
   const qs = new URLSearchParams();
   if (props.cwd) {
     qs.set("cwd", props.cwd);
@@ -20,10 +22,10 @@ export function useFolders(props: UseFolderProps) {
   if (qs.size > 0) {
     query = `?${qs.toString()}`;
   }
-  return useSWR<Folder[]>(`api/folders${query}`, fetcher);
+  return useSWR(`api/folders${query}`, fetcher);
 }
 
-export function createFolder(path: string) {
+export function createFolder(path: string, fetch: typeof global.fetch) {
   return fetch("api/folders", {
     method: "POST",
     headers: {
