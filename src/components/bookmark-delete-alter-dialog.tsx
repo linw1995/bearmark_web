@@ -9,9 +9,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { RequiredAuthContext } from "@/context";
 import { deleteBookmark } from "@/lib/use-bookmark";
-
 import type { Bookmark } from "@/lib/use-bookmark";
+import { fetcherMaker } from "@/lib/utils";
+
+import { useContext } from "react";
 import type { SWRInfiniteResponse } from "swr/infinite";
 
 export function BookmarkDeleteAlertDialog({
@@ -23,6 +26,7 @@ export function BookmarkDeleteAlertDialog({
   mutate: SWRInfiniteResponse<Bookmark[]>["mutate"];
   children: React.ReactNode;
 }) {
+  const { setAuthRequiredReason } = useContext(RequiredAuthContext);
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
@@ -38,7 +42,7 @@ export function BookmarkDeleteAlertDialog({
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={async () => {
-              await deleteBookmark(id);
+              await deleteBookmark(id, fetcherMaker(setAuthRequiredReason));
               mutate();
             }}
           >

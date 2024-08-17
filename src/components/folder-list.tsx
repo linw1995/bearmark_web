@@ -7,6 +7,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Folder, useFolders, createFolder } from "@/lib/use-folder";
+import { RequiredAuthContext } from "@/context";
+import { fetcherMaker, jsonFetcherMaker } from "@/lib/utils";
 
 import {
   FolderIcon,
@@ -16,7 +18,7 @@ import {
   ArrowLeftIcon,
   PlusIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useContext, Fragment } from "react";
 
 function parentPath(path: string): string {
   return path.split("/").slice(0, -1).join("/");
@@ -56,7 +58,11 @@ export function FolderList({
   select: (path: string) => void;
   cd: (path: string) => void;
 }) {
-  const { data, mutate } = useFolders({ cwd });
+  const { setAuthRequiredReason } = useContext(RequiredAuthContext);
+  const { data, mutate } = useFolders(
+    { cwd },
+    jsonFetcherMaker(setAuthRequiredReason)
+  );
   const [selected, setSelected] = useState<Folder | null | undefined>(null);
   const [input, setInput] = useState<string>("");
   const filtered = (data || []).filter((value) =>
@@ -74,14 +80,18 @@ export function FolderList({
       select(folder.path);
     } else {
       // not in folder
-      select(cwd + "//");
+      if (cwd == "/") {
+        select("//");
+      } else {
+        select(cwd + "//");
+      }
     }
   };
   const onSubmit = async () => {
     if (input.length === 0) {
       return;
     }
-    await createFolder(cwd + "/" + input);
+    await createFolder(cwd + "/" + input, fetcherMaker(setAuthRequiredReason));
     await mutate();
     setInput("");
   };
@@ -120,34 +130,35 @@ export function FolderList({
         </div>
       </div>
       <div className="overflow-hidden">
-        {filtered.map((folder, index) => (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div
-                  key={index}
-                  className={className(folder, selected)}
-                  onClick={() => selectFolder(folder)}
-                  onDoubleClick={() => {
-                    cd(folder.path);
-                  }}
-                >
-                  {isSelected(folder, selected) ? (
-                    <FolderOpenIcon className="mr-3 h-5 w-5" />
-                  ) : (
-                    <FolderIcon className="mr-3 h-5 w-5" />
-                  )}
-                  <span>{folderName(folder.path)}</span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>
-                  Double click to open the folder. <br />
-                  {/* Right click for more options. */}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        {filtered.map((folder) => (
+          <Fragment key={folder.id}>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className={className(folder, selected)}
+                    onClick={() => selectFolder(folder)}
+                    onDoubleClick={() => {
+                      cd(folder.path);
+                    }}
+                  >
+                    {isSelected(folder, selected) ? (
+                      <FolderOpenIcon className="mr-3 h-5 w-5" />
+                    ) : (
+                      <FolderIcon className="mr-3 h-5 w-5" />
+                    )}
+                    <span>{folderName(folder.path)}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    Double click to open the folder. <br />
+                    {/* Right click for more options. */}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </Fragment>
         ))}
         {(filtered.length || 0) > 0 ? (
           input.length === 0 && (

@@ -1,5 +1,5 @@
+import { BareFetcher } from "swr";
 import useSWRInfinite from "swr/infinite";
-import { fetcher } from "./utils";
 
 export interface UseTagsProps {
   q?: string;
@@ -10,8 +10,10 @@ export interface Tag {
   name: string;
 }
 
-export function useTags(props: UseTagsProps) {
-  return useSWRInfinite<Tag[]>((pageIndex, previousPageData) => {
+export function useTags(props: UseTagsProps, fetcher: BareFetcher<Tag[]>) {
+  return useSWRInfinite((pageIndex, previousPageData) => {
+    previousPageData = previousPageData || [];
+
     if (pageIndex > 0 && !previousPageData) return null;
 
     const qs = new URLSearchParams();
