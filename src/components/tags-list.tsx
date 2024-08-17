@@ -36,13 +36,13 @@ interface Props {
 const TagsInput = forwardRef(function TagsInput(props: Props, ref) {
   const inputRef = useRef(null);
 
-  const { require } = useContext(RequiredAuthContext);
+  const { setAuthRequiredReason } = useContext(RequiredAuthContext);
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
   const { data: paginatedTags, isLoading } = useTags(
     { q: inputValue },
-    jsonFetcherMaker(require)
+    jsonFetcherMaker(setAuthRequiredReason)
   );
   const isEmpty = paginatedTags?.[0]?.length === 0;
   const tags = paginatedTags?.flat().map((tag) => tag.name) || [];

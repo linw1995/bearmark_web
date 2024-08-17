@@ -55,7 +55,7 @@ export function BookmarkEditor({
     },
   });
 
-  const { require } = useContext(RequiredAuthContext);
+  const { setAuthRequiredReason } = useContext(RequiredAuthContext);
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const changeset: Partial<Bookmark> = {};
     if (data.title !== values.title) {
@@ -67,7 +67,7 @@ export function BookmarkEditor({
     if (data.tags != values.tags) {
       changeset.tags = values.tags.map((tag) => tag.trim());
     }
-    await updateBookmark(data.id, changeset, fetcherMaker(require));
+    await updateBookmark(data.id, changeset, fetcherMaker(setAuthRequiredReason));
     await mutate();
     setOpen(false);
   }

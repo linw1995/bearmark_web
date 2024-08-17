@@ -26,7 +26,7 @@ export function BookmarkDeleteAlertDialog({
   mutate: SWRInfiniteResponse<Bookmark[]>["mutate"];
   children: React.ReactNode;
 }) {
-  const { require } = useContext(RequiredAuthContext);
+  const { setAuthRequiredReason } = useContext(RequiredAuthContext);
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
@@ -42,7 +42,7 @@ export function BookmarkDeleteAlertDialog({
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={async () => {
-              await deleteBookmark(id, fetcherMaker(require));
+              await deleteBookmark(id, fetcherMaker(setAuthRequiredReason));
               mutate();
             }}
           >

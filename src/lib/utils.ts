@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function jsonFetcherMaker<Data>(
-  requireAuth: (required: boolean) => void
+  setAuthRequiredReason: (reason: string) => void
 ): BareFetcher<Data> {
   return async (url, init) => {
     const api_key = loadAPIKey() || "";
@@ -22,7 +22,12 @@ export function jsonFetcherMaker<Data>(
     if (!res.ok) {
       if (res.status === 401 || res.status === 403) {
         removeAPIKey();
-        requireAuth(true);
+        if (res.status === 401) {
+          setAuthRequiredReason("API Key is required");
+        }
+        if (res.status === 403) {
+          setAuthRequiredReason("Invalid API Key");
+        }
       }
       throw new Error(res.statusText);
     }
@@ -31,7 +36,7 @@ export function jsonFetcherMaker<Data>(
 }
 
 export function fetcherMaker(
-  requireAuth: (required: boolean) => void
+  setAuthRequiredReason: (reason: string) => void
 ): typeof global.fetch {
   return async (url, init) => {
     const api_key = loadAPIKey() || "";
@@ -46,7 +51,12 @@ export function fetcherMaker(
     if (!res.ok) {
       if (res.status === 401 || res.status === 403) {
         removeAPIKey();
-        requireAuth(true);
+        if (res.status === 401) {
+          setAuthRequiredReason("API Key is required");
+        }
+        if (res.status === 403) {
+          setAuthRequiredReason("Invalid API Key");
+        }
       }
       throw new Error(res.statusText);
     }

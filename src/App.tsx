@@ -9,11 +9,11 @@ import {
 } from "@/components/ui/resizable";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { saveAPIKey } from "@/lib/utils";
 
 import { useContext, useState } from "react";
 import { Search } from "lucide-react";
 import { CWDContext, RequiredAuthContext } from "./context";
-import { saveAPIKey } from "./lib/utils";
 
 function BookmarksViewer() {
   const [cwd, setCwd] = useState<string>("/");
@@ -63,13 +63,13 @@ function BookmarksViewer() {
 }
 
 function APIKeyInput() {
-  const { require } = useContext(RequiredAuthContext);
+  const { reason, setAuthRequiredReason } = useContext(RequiredAuthContext);
   const [input, setInput] = useState<string>("");
   return (
     <div className="flex items-center justify-center h-screen">
       <form className="sm:max-w-[500px] w-full px-4">
         <div className="grid gap-4 py-4">
-          <div className="space-y-2">
+          <div className="space-y-2 text-left">
             <Label htmlFor="api-key">Bearmark API Key</Label>
             <Input
               id="api-key"
@@ -77,6 +77,7 @@ function APIKeyInput() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
             />
+            <p className="text-red-500 text-sm">{reason}</p>
           </div>
           <Button
             onClick={() => {
@@ -84,7 +85,7 @@ function APIKeyInput() {
                 return;
               }
               saveAPIKey(input);
-              require(false);
+              setAuthRequiredReason("");
             }}
           >
             Submit
@@ -96,11 +97,13 @@ function APIKeyInput() {
 }
 
 function App() {
-  const [required, require] = useState<boolean>(false);
+  const [reason, setReason] = useState("");
   return (
     <>
-      <RequiredAuthContext.Provider value={{ require, required }}>
-        {required ? <APIKeyInput /> : <BookmarksViewer />}
+      <RequiredAuthContext.Provider
+        value={{ setAuthRequiredReason: setReason, reason }}
+      >
+        {reason.length > 0 ? <APIKeyInput /> : <BookmarksViewer />}
       </RequiredAuthContext.Provider>
     </>
   );

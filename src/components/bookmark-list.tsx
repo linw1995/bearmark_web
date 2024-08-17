@@ -90,7 +90,7 @@ export function BookmarkList({
   cwd?: string;
   className: string;
 }) {
-  const { require } = useContext(RequiredAuthContext);
+  const { setAuthRequiredReason } = useContext(RequiredAuthContext);
   const limit = 10;
   const {
     data: paginatedBookmarks,
@@ -99,7 +99,10 @@ export function BookmarkList({
     size,
     setSize,
     mutate,
-  } = useBookmarks({ q: query, limit, cwd }, jsonFetcherMaker(require));
+  } = useBookmarks(
+    { q: query, limit, cwd },
+    jsonFetcherMaker(setAuthRequiredReason)
+  );
   const isEmpty = paginatedBookmarks?.[0]?.length === 0;
   const isReachingEnd =
     isEmpty ||

@@ -58,8 +58,11 @@ export function FolderList({
   select: (path: string) => void;
   cd: (path: string) => void;
 }) {
-  const { require } = useContext(RequiredAuthContext);
-  const { data, mutate } = useFolders({ cwd }, jsonFetcherMaker(require));
+  const { setAuthRequiredReason } = useContext(RequiredAuthContext);
+  const { data, mutate } = useFolders(
+    { cwd },
+    jsonFetcherMaker(setAuthRequiredReason)
+  );
   const [selected, setSelected] = useState<Folder | null | undefined>(null);
   const [input, setInput] = useState<string>("");
   const filtered = (data || []).filter((value) =>
@@ -88,7 +91,7 @@ export function FolderList({
     if (input.length === 0) {
       return;
     }
-    await createFolder(cwd + "/" + input, fetcherMaker(require));
+    await createFolder(cwd + "/" + input, fetcherMaker(setAuthRequiredReason));
     await mutate();
     setInput("");
   };
