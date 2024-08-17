@@ -18,7 +18,7 @@ import {
   ArrowLeftIcon,
   PlusIcon,
 } from "lucide-react";
-import { useState, useContext } from "react";
+import { useState, useContext, Fragment } from "react";
 
 function parentPath(path: string): string {
   return path.split("/").slice(0, -1).join("/");
@@ -127,34 +127,35 @@ export function FolderList({
         </div>
       </div>
       <div className="overflow-hidden">
-        {filtered.map((folder, index) => (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div
-                  key={index}
-                  className={className(folder, selected)}
-                  onClick={() => selectFolder(folder)}
-                  onDoubleClick={() => {
-                    cd(folder.path);
-                  }}
-                >
-                  {isSelected(folder, selected) ? (
-                    <FolderOpenIcon className="mr-3 h-5 w-5" />
-                  ) : (
-                    <FolderIcon className="mr-3 h-5 w-5" />
-                  )}
-                  <span>{folderName(folder.path)}</span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>
-                  Double click to open the folder. <br />
-                  {/* Right click for more options. */}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        {filtered.map((folder) => (
+          <Fragment key={folder.id}>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className={className(folder, selected)}
+                    onClick={() => selectFolder(folder)}
+                    onDoubleClick={() => {
+                      cd(folder.path);
+                    }}
+                  >
+                    {isSelected(folder, selected) ? (
+                      <FolderOpenIcon className="mr-3 h-5 w-5" />
+                    ) : (
+                      <FolderIcon className="mr-3 h-5 w-5" />
+                    )}
+                    <span>{folderName(folder.path)}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    Double click to open the folder. <br />
+                    {/* Right click for more options. */}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </Fragment>
         ))}
         {(filtered.length || 0) > 0 ? (
           input.length === 0 && (
