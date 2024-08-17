@@ -74,7 +74,11 @@ export function FolderList({
       select(folder.path);
     } else {
       // not in folder
-      select(cwd + "//");
+      if (cwd == "/") {
+        select("//");
+      } else {
+        select(cwd + "//");
+      }
     }
   };
   const onSubmit = async () => {
