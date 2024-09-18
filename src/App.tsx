@@ -12,13 +12,14 @@ import { Label } from "@/components/ui/label";
 import { saveAPIKey } from "@/lib/utils";
 
 import { useContext, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, CopyXIcon, CopyCheckIcon, ArrowLeftRightIcon } from "lucide-react";
 import { CWDContext, RequiredAuthContext } from "./context";
 
 function BookmarksViewer() {
   const [cwd, setCwd] = useState<string>("/");
   const [query, setQuery] = useState<string>("");
-  const [selected, select] = useState<string>("/");
+  const [selectedCWD, selectCWD] = useState<string>("/");
+  const [selecteds, setSelecteds] = useState<Map<number, boolean> | undefined>(undefined);
   return (
     <CWDContext.Provider value={cwd}>
       <ResizablePanelGroup
@@ -31,9 +32,9 @@ function BookmarksViewer() {
             cwd={cwd}
             cd={(path) => {
               setCwd(path);
-              select(path);
+              selectCWD(path);
             }}
-            select={select}
+            select={selectCWD}
           />
         </ResizablePanel>
         <ResizableHandle withHandle />
@@ -41,6 +42,15 @@ function BookmarksViewer() {
           <div className="flex justify-between items-center mb-6 gap-2 pt-2">
             <h1 className="text-2xl font-bold">Bookmarks</h1>
             <div className="flex items-center rounded-md bg-card gap-2">
+              {selecteds == undefined &&
+                [
+                  <CopyCheckIcon onClick={() => setSelecteds(new Map())} />,
+                ]
+                || [
+                  <ArrowLeftRightIcon />,
+                  <CopyXIcon onClick={() => setSelecteds(undefined)} />,
+                ]
+              }
               <Input
                 type="search"
                 placeholder="Search..."
@@ -54,7 +64,15 @@ function BookmarksViewer() {
           <BookmarkList
             className="pr-4 flex-grow"
             query={query}
-            cwd={selected}
+            cwd={selectedCWD}
+            selecteds={selecteds}
+            select={(id) => {
+              if (!selecteds) {
+                return;
+              }
+              selecteds.set(id, !selecteds.get(id));
+              setSelecteds(new Map(selecteds));
+            }}
           />
         </ResizablePanel>
       </ResizablePanelGroup>

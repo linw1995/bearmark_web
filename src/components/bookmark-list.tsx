@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookmarkEditor } from "@/components/bookmark-editor";
+import { Checkbox } from "@/components/ui/checkbox";
 import { BookmarkDeleteAlertDialog } from "./bookmark-delete-alter-dialog";
 import { cn, jsonFetcherMaker } from "@/lib/utils";
 import { RequiredAuthContext } from "@/context";
@@ -43,14 +44,26 @@ function SkeletonBookmark() {
 function Bookmark({
   data,
   mutate,
+  selected,
+  select,
 }: {
   data: Bookmark;
   mutate: SWRInfiniteResponse<Bookmark[]>["mutate"];
+  selected?: boolean;
+  select: () => void;
 }) {
   return (
     <Card>
       <CardHeader className="flex flex-row justify-between items-center gap-4">
-        <CardTitle>{data.title}</CardTitle>
+        <div className="flex flex-row items-center gap-2">
+          {selected != undefined
+            &&
+            <Checkbox checked={selected} onClick={select} />
+          }
+          <CardTitle>
+            {data.title}
+          </CardTitle>
+        </div>
         <div className="flex gap-2">
           <Button variant="ghost" size="icon" asChild>
             <a href={data.url} target="_blank" rel="noopener noreferrer">
@@ -85,10 +98,14 @@ export function BookmarkList({
   query,
   cwd,
   className,
+  selecteds,
+  select,
 }: {
   query?: string;
   cwd?: string;
   className: string;
+  selecteds?: Map<number, boolean>;
+  select: (id: number) => void;
 }) {
   const { setAuthRequiredReason } = useContext(RequiredAuthContext);
   const limit = 10;
@@ -116,7 +133,10 @@ export function BookmarkList({
           {paginatedBookmarks &&
             paginatedBookmarks.map((bookmarks) =>
               bookmarks.map((bookmark) => (
-                <Bookmark key={bookmark.id} data={bookmark} mutate={mutate} />
+                <Bookmark key={bookmark.id} data={bookmark} mutate={mutate}
+                  selected={selecteds && (selecteds.get(bookmark.id) || false)}
+                  select={() => select(bookmark.id)}
+                />
               ))
             )}
           {isError && (
