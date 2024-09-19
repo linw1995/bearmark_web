@@ -33,8 +33,12 @@ function BookmarksViewer() {
             cd={(path) => {
               setCwd(path);
               selectCWD(path);
+              setSelecteds(undefined);
             }}
-            select={selectCWD}
+            select={(path) => {
+              selectCWD(path);
+              setSelecteds(undefined);
+            }}
           />
         </ResizablePanel>
         <ResizableHandle withHandle />
@@ -56,7 +60,10 @@ function BookmarksViewer() {
                 placeholder="Search..."
                 className="bg-transparent flex-1 focus:outline-none"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setSelecteds(undefined);
+                }}
               />
               <Search className="text-card-foreground hover:bg-muted/50 transition-colors" />
             </div>
