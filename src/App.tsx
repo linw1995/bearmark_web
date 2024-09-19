@@ -1,7 +1,7 @@
 import "@/App.css";
 import { Input } from "@/components/ui/input";
 import { BookmarkList } from "@/components/bookmark-list";
-import { FolderList } from "@/components/folder-list";
+import { FolderList, FolderChooser } from "@/components/folder-list";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -51,7 +51,10 @@ function BookmarksViewer() {
                   <CopyCheckIcon onClick={() => setSelecteds(new Map())} />,
                 ]
                 || [
-                  <ArrowLeftRightIcon />,
+                  <FolderChooser
+                    defaultCWD={cwd}
+                    onChange={(path) => console.log(path)}
+                  />,
                   <CopyXIcon onClick={() => setSelecteds(undefined)} />,
                 ]
               }
