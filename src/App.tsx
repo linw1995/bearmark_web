@@ -31,12 +31,12 @@ function BookmarksViewer() {
         <ResizablePanel defaultSize={20}>
           <FolderList
             cwd={cwd}
-            cd={(path) => {
+            onCD={(path) => {
               setCwd(path);
               selectCWD(path);
               setSelecteds(undefined);
             }}
-            select={(path) => {
+            onSelect={(path) => {
               selectCWD(path);
               setSelecteds(undefined);
             }}

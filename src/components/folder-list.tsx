@@ -56,13 +56,13 @@ export enum FolderListMode {
 
 export function FolderList({
   cwd,
-  cd,
-  select,
+  onCD,
+  onSelect,
   mode = FolderListMode.FilterBookmarks,
 }: {
   cwd: Folder;
-  select: (target: Folder) => void;
-  cd: (target: Folder) => void;
+  onSelect: (target: Folder) => void;
+  onCD: (target: Folder) => void;
   mode?: FolderListMode;
 }) {
   const { setAuthRequiredReason } = useContext(RequiredAuthContext);
@@ -71,29 +71,43 @@ export function FolderList({
     jsonFetcherMaker(setAuthRequiredReason)
   );
   const [selected, setSelected] = useState<Folder | null | undefined>(null);
+  const [history, setHistory] = useState<Folder[]>([]);
   const [input, setInput] = useState<string>("");
   const filtered = (data || []).filter((value) =>
     folderName(value.path).match(input)
   );
 
+  const cdBackward = () => {
+    if (history.length === 0) {
+      return;
+    }
+    const last = history.pop();
+    if (last) {
+      onCD(last);
+    }
+  }
+  const cd = (folder: Folder) => {
+    setHistory([...history, cwd]);
+    onCD(folder);
+  }
   const selectFolder = (folder: Folder | undefined) => {
     if (folder === selected) {
       setSelected(null);
-      select(cwd);
+      onSelect(cwd);
       return;
     }
     setSelected(folder);
     if (folder) {
-      select(folder);
+      onSelect(folder);
     } else {
       // not in folder
       if (cwd.path == "/") {
-        select({
+        onSelect({
           id: cwd.id,
           path: "//"
         });
       } else {
-        select({
+        onSelect({
           id: cwd.id,
           path: cwd.path + "//"
         });
@@ -124,10 +138,7 @@ export function FolderList({
             size="icon"
             className="ml-3 rounded-full hover:bg-muted"
             onClick={() => {
-              cd({
-                id: cwd.id,
-                path: parentPath(cwd.path),
-              });
+              cdBackward();
               setSelected(null);
             }}
           >
@@ -231,8 +242,8 @@ export function FolderChooser({
         <div className="h-[30vh]">
           <FolderList
             cwd={cwd}
-            select={setSelected}
-            cd={(path) => {
+            onSelect={setSelected}
+            onCD={(path) => {
               setCwd(path);
               setSelected(path);
             }}
