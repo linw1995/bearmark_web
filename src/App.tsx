@@ -9,17 +9,19 @@ import {
 } from "@/components/ui/resizable";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { saveAPIKey } from "@/lib/utils";
+import { fetcherMaker, saveAPIKey } from "@/lib/utils";
 
 import { useContext, useState } from "react";
 import { Search, CopyXIcon, CopyCheckIcon, ArrowLeftRightIcon } from "lucide-react";
 import { CWDContext, RequiredAuthContext } from "./context";
+import { RootFolder, Folder, moveOutFolder, moveInFolder } from "./lib/use-folder";
 
 function BookmarksViewer() {
-  const [cwd, setCwd] = useState<string>("/");
+  const [cwd, setCwd] = useState<Folder>(RootFolder);
   const [query, setQuery] = useState<string>("");
-  const [selectedCWD, selectCWD] = useState<string>("/");
+  const [selectedCWD, selectCWD] = useState<Folder>(RootFolder);
   const [selecteds, setSelecteds] = useState<Map<number, boolean> | undefined>(undefined);
+  const { setAuthRequiredReason } = useContext(RequiredAuthContext);
   return (
     <CWDContext.Provider value={cwd}>
       <ResizablePanelGroup
@@ -28,7 +30,6 @@ function BookmarksViewer() {
       >
         <ResizablePanel defaultSize={20}>
           <FolderList
-            key={cwd}
             cwd={cwd}
             cd={(path) => {
               setCwd(path);
@@ -48,14 +49,40 @@ function BookmarksViewer() {
             <div className="flex items-center rounded-md bg-card gap-2">
               {selecteds == undefined &&
                 [
-                  <CopyCheckIcon onClick={() => setSelecteds(new Map())} />,
+                  <CopyCheckIcon
+                    key="enable-selections"
+                    onClick={() => setSelecteds(new Map())}
+                  />,
                 ]
                 || [
                   <FolderChooser
+                    key="folder-chooser"
                     defaultCWD={cwd}
-                    onChange={(path) => console.log(path)}
+                    onChange={async (value) => {
+                      if (selecteds == undefined) {
+                        return
+                      }
+                      if (value.id === 0) {
+                        for (const [id, selected] of selecteds) {
+                          if (selected) {
+                            await moveOutFolder(id, fetcherMaker(setAuthRequiredReason));
+                          }
+                        }
+                      } else {
+                        for (const [id, selected] of selecteds) {
+                          if (selected) {
+                            await moveInFolder(id, value.id, fetcherMaker(setAuthRequiredReason));
+                          }
+                        }
+                      }
+                    }}
+                  >
+                    <ArrowLeftRightIcon />
+                  </FolderChooser>,
+                  <CopyXIcon
+                    key="disable-selections"
+                    onClick={() => setSelecteds(undefined)}
                   />,
-                  <CopyXIcon onClick={() => setSelecteds(undefined)} />,
                 ]
               }
               <Input
@@ -74,7 +101,7 @@ function BookmarksViewer() {
           <BookmarkList
             className="pr-4 flex-grow"
             query={query}
-            cwd={selectedCWD}
+            cwd={selectedCWD.path}
             selecteds={selecteds}
             select={(id) => {
               if (!selecteds) {
