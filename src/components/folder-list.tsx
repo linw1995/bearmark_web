@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Folder, useFolders, createFolder } from "@/lib/use-folder";
 import { RequiredAuthContext } from "@/context";
+import { Dialog, DialogTitle, DialogDescription, DialogContent, DialogFooter, DialogHeader, DialogTrigger } from "@/components/ui/dialog";
 import { fetcherMaker, jsonFetcherMaker } from "@/lib/utils";
 
 import {
@@ -19,10 +20,6 @@ import {
   PlusIcon,
 } from "lucide-react";
 import { useState, useContext, Fragment } from "react";
-
-function parentPath(path: string): string {
-  return path.split("/").slice(0, -1).join("/");
-}
 
 function folderName(path: string): string {
   return path.split("/").pop() || "";
@@ -42,48 +39,79 @@ function className(
   folder: Folder | undefined,
   selectedFolder: Folder | null | undefined
 ): string {
-  return `flex items-center px-4 py-3 cursor-pointer transition-colors ${
-    isSelected(folder, selectedFolder)
-      ? "bg-primary text-primary-foreground"
-      : "hover:bg-muted"
-  }`;
+  return `flex snap-start items-center p-4 cursor-pointer transition-colors ${isSelected(folder, selectedFolder)
+    ? "bg-primary text-primary-foreground"
+    : "hover:bg-muted"
+    }`;
+}
+
+export enum FolderListMode {
+  SelectFolder,
+  FilterBookmarks,
 }
 
 export function FolderList({
   cwd,
-  cd,
-  select,
+  onCD,
+  onSelect,
+  mode = FolderListMode.FilterBookmarks,
 }: {
-  cwd: string;
-  select: (path: string) => void;
-  cd: (path: string) => void;
+  cwd: Folder;
+  onSelect: (target: Folder) => void;
+  onCD: (target: Folder) => void;
+  mode?: FolderListMode;
 }) {
   const { setAuthRequiredReason } = useContext(RequiredAuthContext);
   const { data, mutate } = useFolders(
-    { cwd },
+    { cwd: cwd.path },
     jsonFetcherMaker(setAuthRequiredReason)
   );
   const [selected, setSelected] = useState<Folder | null | undefined>(null);
+  const [history, setHistory] = useState<Folder[]>([]);
   const [input, setInput] = useState<string>("");
   const filtered = (data || []).filter((value) =>
     folderName(value.path).match(input)
   );
 
-  const selectFolder = (folder: Folder | undefined) => {
-    if (folder === selected) {
-      setSelected(null);
-      select(cwd);
+  const clearSelect = (cwd: Folder) => {
+    setSelected(null);
+    onSelect(cwd);
+  }
+  const cdBackward = () => {
+    if (history.length === 0) {
+      clearSelect(cwd);
       return;
     }
-    setSelected(folder);
-    if (folder) {
-      select(folder.path);
+    const last = history.pop();
+    if (last) {
+      clearSelect(last);
+      onCD(last);
+    }
+  }
+  const cd = (folder: Folder) => {
+    setHistory([...history, cwd]);
+    onCD(folder);
+  }
+  const selectFolder = (folder: Folder | undefined) => {
+    if (folder === selected) {
+      clearSelect(cwd);
     } else {
-      // not in folder
-      if (cwd == "/") {
-        select("//");
+      setSelected(folder);
+      if (folder) {
+        onSelect(folder);
       } else {
-        select(cwd + "//");
+        // not in folder
+        if (cwd.path == "/") {
+          onSelect({
+            id: cwd.id,
+            path: "//"
+          });
+        } else {
+          onSelect({
+            id: cwd.id,
+            path: cwd.path + "//"
+          });
+        }
       }
     }
   };
@@ -91,13 +119,13 @@ export function FolderList({
     if (input.length === 0) {
       return;
     }
-    await createFolder(cwd + "/" + input, fetcherMaker(setAuthRequiredReason));
+    await createFolder(cwd.path + "/" + input, fetcherMaker(setAuthRequiredReason));
     await mutate();
     setInput("");
   };
   return (
-    <div className="w-full p-1 select-none">
-      <div className="mb-4">
+    <div className="h-full flex flex-col select-none">
+      <div className="flex-none mb-4">
         <div className="flex items-center gap-2">
           <Input
             type="text"
@@ -111,7 +139,7 @@ export function FolderList({
             size="icon"
             className="ml-3 rounded-full hover:bg-muted"
             onClick={() => {
-              cd(parentPath(cwd));
+              cdBackward();
               setSelected(null);
             }}
           >
@@ -129,7 +157,7 @@ export function FolderList({
           </Button>
         </div>
       </div>
-      <div className="overflow-hidden">
+      <div className="grow overflow-hidden overflow-y-auto snap-y snap-mandatory">
         {filtered.map((folder) => (
           <Fragment key={folder.id}>
             <TooltipProvider>
@@ -139,7 +167,7 @@ export function FolderList({
                     className={className(folder, selected)}
                     onClick={() => selectFolder(folder)}
                     onDoubleClick={() => {
-                      cd(folder.path);
+                      cd(folder);
                     }}
                   >
                     {isSelected(folder, selected) ? (
@@ -161,7 +189,7 @@ export function FolderList({
           </Fragment>
         ))}
         {(filtered.length || 0) > 0 ? (
-          input.length === 0 && (
+          mode == FolderListMode.FilterBookmarks && input.length === 0 && (
             <div
               key="un-categorized"
               className={className(undefined, selected)}
@@ -184,3 +212,57 @@ export function FolderList({
     </div>
   );
 }
+
+
+export function FolderChooser({
+  defaultCWD,
+  onChange,
+  children,
+}: {
+  defaultCWD: Folder;
+  onChange: (value: Folder) => void;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const [cwd, setCwd] = useState<Folder>(defaultCWD);
+  const [selected, setSelected] = useState<Folder>(defaultCWD);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger>
+        {children}
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            Move bookmarks to
+          </DialogTitle>
+          <DialogDescription>
+            {selected && `Directory ${selected.path}` || "Nowhere"}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="h-[30vh]">
+          <FolderList
+            cwd={cwd}
+            onSelect={setSelected}
+            onCD={(path) => {
+              setCwd(path);
+              setSelected(path);
+            }}
+            mode={FolderListMode.SelectFolder}
+          />
+        </div>
+        <DialogFooter>
+          <Button onClick={
+            () => {
+              onChange(selected);
+              setOpen(false);
+            }
+          }>
+            Move
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+

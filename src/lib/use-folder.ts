@@ -9,6 +9,11 @@ export interface Folder {
   path: string;
 }
 
+export const RootFolder: Folder = {
+  id: 0,
+  path: "/",
+};
+
 export function useFolders(
   props: UseFolderProps,
   fetcher: BareFetcher<Folder[]>
@@ -32,5 +37,24 @@ export function createFolder(path: string, fetch: typeof global.fetch) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ path }),
+  });
+}
+
+export function moveInFolder(
+  id: number,
+  folder_id: number,
+  fetch: typeof global.fetch,
+) {
+  return fetch(`api/folders/move_in/${id}/${folder_id}`, {
+    method: "PUT",
+  });
+}
+
+export function moveOutFolder(
+  id: number,
+  fetch: typeof global.fetch,
+) {
+  return fetch(`api/folders/move_out/${id}`, {
+    method: "PUT",
   });
 }

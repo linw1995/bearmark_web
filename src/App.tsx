@@ -1,7 +1,7 @@
 import "@/App.css";
 import { Input } from "@/components/ui/input";
 import { BookmarkList } from "@/components/bookmark-list";
-import { FolderList } from "@/components/folder-list";
+import { FolderList, FolderChooser } from "@/components/folder-list";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -9,16 +9,19 @@ import {
 } from "@/components/ui/resizable";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { saveAPIKey } from "@/lib/utils";
+import { fetcherMaker, saveAPIKey } from "@/lib/utils";
 
 import { useContext, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, CopyXIcon, CopyCheckIcon, ArrowLeftRightIcon } from "lucide-react";
 import { CWDContext, RequiredAuthContext } from "./context";
+import { RootFolder, Folder, moveOutFolder, moveInFolder } from "./lib/use-folder";
 
 function BookmarksViewer() {
-  const [cwd, setCwd] = useState<string>("/");
+  const [cwd, setCwd] = useState<Folder>(RootFolder);
   const [query, setQuery] = useState<string>("");
-  const [selected, select] = useState<string>("/");
+  const [selectedCWD, selectCWD] = useState<Folder>(RootFolder);
+  const [selecteds, setSelecteds] = useState<Map<number, boolean> | undefined>(undefined);
+  const { setAuthRequiredReason } = useContext(RequiredAuthContext);
   return (
     <CWDContext.Provider value={cwd}>
       <ResizablePanelGroup
@@ -27,13 +30,16 @@ function BookmarksViewer() {
       >
         <ResizablePanel defaultSize={20}>
           <FolderList
-            key={cwd}
             cwd={cwd}
-            cd={(path) => {
+            onCD={(path) => {
               setCwd(path);
-              select(path);
+              selectCWD(path);
+              setSelecteds(undefined);
             }}
-            select={select}
+            onSelect={(path) => {
+              selectCWD(path);
+              setSelecteds(undefined);
+            }}
           />
         </ResizablePanel>
         <ResizableHandle withHandle />
@@ -41,12 +47,53 @@ function BookmarksViewer() {
           <div className="flex justify-between items-center mb-6 gap-2 pt-2">
             <h1 className="text-2xl font-bold">Bookmarks</h1>
             <div className="flex items-center rounded-md bg-card gap-2">
+              {selecteds == undefined &&
+                [
+                  <CopyCheckIcon
+                    key="enable-selections"
+                    onClick={() => setSelecteds(new Map())}
+                  />,
+                ]
+                || [
+                  <FolderChooser
+                    key="folder-chooser"
+                    defaultCWD={cwd}
+                    onChange={async (value) => {
+                      if (selecteds == undefined) {
+                        return
+                      }
+                      if (value.id === 0) {
+                        for (const [id, selected] of selecteds) {
+                          if (selected) {
+                            await moveOutFolder(id, fetcherMaker(setAuthRequiredReason));
+                          }
+                        }
+                      } else {
+                        for (const [id, selected] of selecteds) {
+                          if (selected) {
+                            await moveInFolder(id, value.id, fetcherMaker(setAuthRequiredReason));
+                          }
+                        }
+                      }
+                    }}
+                  >
+                    <ArrowLeftRightIcon />
+                  </FolderChooser>,
+                  <CopyXIcon
+                    key="disable-selections"
+                    onClick={() => setSelecteds(undefined)}
+                  />,
+                ]
+              }
               <Input
                 type="search"
                 placeholder="Search..."
                 className="bg-transparent flex-1 focus:outline-none"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setSelecteds(undefined);
+                }}
               />
               <Search className="text-card-foreground hover:bg-muted/50 transition-colors" />
             </div>
@@ -54,7 +101,15 @@ function BookmarksViewer() {
           <BookmarkList
             className="pr-4 flex-grow"
             query={query}
-            cwd={selected}
+            cwd={selectedCWD.path}
+            selecteds={selecteds}
+            select={(id) => {
+              if (!selecteds) {
+                return;
+              }
+              selecteds.set(id, !selecteds.get(id));
+              setSelecteds(new Map(selecteds));
+            }}
           />
         </ResizablePanel>
       </ResizablePanelGroup>
