@@ -21,10 +21,6 @@ import {
 } from "lucide-react";
 import { useState, useContext, Fragment } from "react";
 
-function parentPath(path: string): string {
-  return path.split("/").slice(0, -1).join("/");
-}
-
 function folderName(path: string): string {
   return path.split("/").pop() || "";
 }
@@ -77,12 +73,18 @@ export function FolderList({
     folderName(value.path).match(input)
   );
 
+  const clearSelect = (cwd: Folder) => {
+    setSelected(null);
+    onSelect(cwd);
+  }
   const cdBackward = () => {
     if (history.length === 0) {
+      clearSelect(cwd);
       return;
     }
     const last = history.pop();
     if (last) {
+      clearSelect(last);
       onCD(last);
     }
   }
@@ -92,25 +94,24 @@ export function FolderList({
   }
   const selectFolder = (folder: Folder | undefined) => {
     if (folder === selected) {
-      setSelected(null);
-      onSelect(cwd);
-      return;
-    }
-    setSelected(folder);
-    if (folder) {
-      onSelect(folder);
+      clearSelect(cwd);
     } else {
-      // not in folder
-      if (cwd.path == "/") {
-        onSelect({
-          id: cwd.id,
-          path: "//"
-        });
+      setSelected(folder);
+      if (folder) {
+        onSelect(folder);
       } else {
-        onSelect({
-          id: cwd.id,
-          path: cwd.path + "//"
-        });
+        // not in folder
+        if (cwd.path == "/") {
+          onSelect({
+            id: cwd.id,
+            path: "//"
+          });
+        } else {
+          onSelect({
+            id: cwd.id,
+            path: cwd.path + "//"
+          });
+        }
       }
     }
   };
