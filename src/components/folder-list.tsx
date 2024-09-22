@@ -126,7 +126,7 @@ export function FolderList({
   return (
     <div className="h-full flex flex-col select-none">
       <div className="flex-none mb-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 p-1">
           <Input
             type="text"
             placeholder="Search or create a new folder"
